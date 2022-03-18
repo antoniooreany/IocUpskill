@@ -18,7 +18,6 @@ public class ClassPathApplicationContext implements ApplicationContext {
     private BeanDefinitionReader beanDefinitionReader;
 
     public ClassPathApplicationContext() {
-
     }
 
     public ClassPathApplicationContext(String... path) {
@@ -36,17 +35,25 @@ public class ClassPathApplicationContext implements ApplicationContext {
 
     @Override
     public <T> T getBean(Class<T> clazz) {
-        return null;
+        try {
+            return clazz.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException("Cannot instantiate class '" + clazz + "'", e);
+        }
     }
 
     @Override
-    public <T> T getBean(String name, Class<T> clazz) {
-        return null;
+    public <T> T getBean(String id, Class<T> clazz) {
+        T beanById = (T) beans.get(id);
+        if (beanById.getClass() != clazz) {
+            throw new ClassCastException();
+        }
+        return beanById;
     }
 
     @Override
-    public <T> T getBean(String name) {
-        return null;
+    public <T> T getBean(String id) {
+        return (T) beans.get(id);
     }
 
     @Override
@@ -55,15 +62,16 @@ public class ClassPathApplicationContext implements ApplicationContext {
     }
 
     private void instantiateBeans(List<BeanDefinition> beanDefinitions) {
+        //TODO
     }
 
 
     private void injectValueDependencies(List<BeanDefinition> beanDefinitions) {
-
+        //TODO
     }
 
     private void injectRefDependencies(List<BeanDefinition> beanDefinitions) {
-
+        //TODO
     }
 
     private String getSetterName(String propertyName) {
