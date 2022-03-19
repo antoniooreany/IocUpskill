@@ -82,27 +82,33 @@ public class ClassPathApplicationContext implements ApplicationContext {
     private void injectValueDependencies(List<BeanDefinition> beanDefinitions) {
         for (BeanDefinition beanDefinition : beanDefinitions) {
             Map<String, String> dependencies = beanDefinition.getDependencies();
-            for (String propertyName : dependencies.keySet()) {
-                String setterName = getSetterName(propertyName);
-                String id = beanDefinition.getId();
-                Bean bean = beans.get(id);
-                for (Method method : bean.getValue().getClass().getMethods()) {
-                    if (method.getName().equals(setterName)) {
-                        Object propertyValue = dependencies.get(propertyName);
-                        try {
-                            method.invoke(bean.getValue(), propertyValue);
-                        } catch (IllegalAccessException | InvocationTargetException e) {
-                            throw new RuntimeException(e); //TODO
-                        }
-                    }
-                }
-            }
+            injectDependencies(dependencies, beanDefinition);
         }
     }
 
     private void injectRefDependencies(List<BeanDefinition> beanDefinitions) {
-        //TODO
+        for (BeanDefinition beanDefinition : beanDefinitions) {
+            Map<String, String> dependencies = beanDefinition.getRefDependencies();
+            injectDependencies(dependencies, beanDefinition);
+        }
+    }
 
+    private void injectDependencies(Map<String, String> dependencies, BeanDefinition beanDefinition) {
+        for (String propertyName : dependencies.keySet()) {
+            String setterName = getSetterName(propertyName);
+            String id = beanDefinition.getId();
+            Bean bean = beans.get(id);
+            for (Method method : bean.getValue().getClass().getMethods()) {
+                if (method.getName().equals(setterName)) {
+                    Object propertyValue = dependencies.get(propertyName);
+                    try {
+                        method.invoke(bean.getValue(), propertyValue); //TODO java.lang.IllegalArgumentException: argument type mismatch: what's wrong here?
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new RuntimeException(e); //TODO
+                    }
+                }
+            }
+        }
     }
 
     private String getSetterName(String propertyName) {
