@@ -1,6 +1,7 @@
 package com.dzytsiuk.ioc.context;
 
 
+import com.dzytsiuk.ioc.context.cast.JavaNumberTypeCast;
 import com.dzytsiuk.ioc.entity.Bean;
 import com.dzytsiuk.ioc.entity.BeanDefinition;
 import com.dzytsiuk.ioc.io.BeanDefinitionReader;
@@ -8,6 +9,7 @@ import com.dzytsiuk.ioc.io.XMLBeanDefinitionReader;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,11 +100,19 @@ public class ClassPathApplicationContext implements ApplicationContext {
             String setterName = getSetterName(propertyName);
             String id = beanDefinition.getId();
             Bean bean = beans.get(id);
-            for (Method method : bean.getValue().getClass().getMethods()) {
+            Object beanValue = bean.getValue();
+            for (Method method : beanValue.getClass().getMethods()) {
                 if (method.getName().equals(setterName)) {
-                    Object propertyValue = dependencies.get(propertyName);
+                    Parameter parameter = method.getParameters()[0];
+                    Class<? extends Parameter> fieldClass = parameter.getClass();
+                    String propertyValue = dependencies.get(propertyName); //
+                    if (fieldClass.isPrimitive()) {
+                        Class<?> type = parameter.getType();
+                        type primitive = JavaNumberTypeCast.castPrimitive(propertyValue, fieldClass);
+                        // TODO
+                    }
                     try {
-                        method.invoke(bean.getValue(), propertyValue); //TODO java.lang.IllegalArgumentException: argument type mismatch: what's wrong here?
+                        method.invoke(beanValue, propertyValue); //TODO java.lang.IllegalArgumentException: argument type mismatch: String or int as a parameter. How to know where is needed to cast, and where is not?
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new RuntimeException(e); //TODO
                     }
