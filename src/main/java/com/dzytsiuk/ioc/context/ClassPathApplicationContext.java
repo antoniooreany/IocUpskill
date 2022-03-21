@@ -105,16 +105,17 @@ public class ClassPathApplicationContext implements ApplicationContext {
                 if (method.getName().equals(setterName)) {
                     Parameter parameter = method.getParameters()[0];
                     Class<? extends Parameter> fieldClass = parameter.getClass();
-                    String propertyValue = dependencies.get(propertyName); //
-                    if (fieldClass.isPrimitive()) {
-                        Class<?> type = parameter.getType();
-                        type primitive = JavaNumberTypeCast.castPrimitive(propertyValue, fieldClass);
-                        // TODO
-                    }
+                    String propertyValue = dependencies.get(propertyName);
                     try {
-                        method.invoke(beanValue, propertyValue); //TODO java.lang.IllegalArgumentException: argument type mismatch: String or int as a parameter. How to know where is needed to cast, and where is not?
+                        if (fieldClass.isPrimitive()) {
+                            Integer primitivePropertyValue =
+                                    (Integer) JavaNumberTypeCast.castPrimitive(propertyValue, fieldClass);
+                            method.invoke(beanValue, primitivePropertyValue);
+                        } else {
+                            method.invoke(beanValue, propertyValue); //TODO java.lang.IllegalArgumentException: argument type mismatch: String or int as a parameter. How to know where is needed to cast, and where is not?
+                        }
                     } catch (IllegalAccessException | InvocationTargetException e) {
-                        throw new RuntimeException(e); //TODO
+                        throw new RuntimeException(e);
                     }
                 }
             }
