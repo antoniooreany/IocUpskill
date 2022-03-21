@@ -103,13 +103,13 @@ public class ClassPathApplicationContext implements ApplicationContext {
             Object beanValue = bean.getValue();
             for (Method method : beanValue.getClass().getMethods()) {
                 if (method.getName().equals(setterName)) {
-                    Parameter parameter = method.getParameters()[0];
+                    Parameter parameter = method.getParameters()[SETTER_PARAMETER_INDEX];
                     Class<? extends Parameter> fieldClass = parameter.getClass();
                     String propertyValue = dependencies.get(propertyName);
                     try {
                         if (fieldClass.isPrimitive()) {
                             Integer primitivePropertyValue =
-                                    (Integer) JavaNumberTypeCast.castPrimitive(propertyValue, fieldClass);
+                                    (Integer) JavaNumberTypeCast.castPrimitive(propertyValue, fieldClass); //TODO 'Integer' is hardcoded.
                             method.invoke(beanValue, primitivePropertyValue);
                         } else {
                             method.invoke(beanValue, propertyValue); //TODO java.lang.IllegalArgumentException: argument type mismatch: String or int as a parameter. How to know where is needed to cast, and where is not?
