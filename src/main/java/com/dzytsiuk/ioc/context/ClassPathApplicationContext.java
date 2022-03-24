@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ClassPathApplicationContext implements ApplicationContext {
+
     private static final String SETTER_PREFIX = "set";
     private static final int SETTER_PARAMETER_INDEX = 0;
 
@@ -104,12 +105,13 @@ public class ClassPathApplicationContext implements ApplicationContext {
             for (Method method : beanValue.getClass().getMethods()) {
                 if (method.getName().equals(setterName)) {
                     Parameter parameter = method.getParameters()[SETTER_PARAMETER_INDEX];
-                    Class<? extends Parameter> fieldClass = parameter.getClass();
+//                    Class<? extends Parameter> fieldClass = parameter.getClass();
+                    Class<?> parameterType = parameter.getType();
                     String propertyValue = dependencies.get(propertyName);
                     try {
-                        if (fieldClass.isPrimitive()) {
+                        if (parameterType.isPrimitive()) {
                             Integer primitivePropertyValue =
-                                    (Integer) JavaNumberTypeCast.castPrimitive(propertyValue, fieldClass); //TODO 'Integer' is hardcoded.
+                                    (Integer) JavaNumberTypeCast.castPrimitive(propertyValue, parameterType); //TODO 'Integer' is hardcoded.
                             method.invoke(beanValue, primitivePropertyValue);
                         } else {
                             method.invoke(beanValue, propertyValue); //TODO java.lang.IllegalArgumentException: argument type mismatch: String or int as a parameter. How to know where is needed to cast, and where is not?
